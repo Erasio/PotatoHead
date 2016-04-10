@@ -18,22 +18,23 @@ function Level:init_level(map)
   
     setmetatable(level, Level_mt)
 
+    for i = 1, 10 do
+        level.actors[i] = {}
+    end
+
     character = PlayerCharacter.create(level, 1155/2, 500)
 
     file = io.open(level.map .. ".map", "r")
     if file then
         local line = file:read()
         while line ~= nil do
-            local actor_type, actor_x, actor_y, x1, y1, x2, y2, x3, y3, x4, y4 = unpack(split_string(line, ","))
-            print("Type", actor_type)
-            print("Location", actor_x, actor_y)
-            print("Shape", x2 - x4, y2 - y4)
+            actor_type, actor_x, actor_y = unpack(split_string(line, ","))
             if actor_type == "static" then
-                local actor_shape = love.physics.newPolygonShape(x1, y1, x2, y2, x3, y3, x4, y4)
-                local actor_quad = love.graphics.newQuad(0, 0, x2 - x4, y2 - y4, level.default_sprite:getDimensions())
-                ActorStatic.create(level, actor_x, actor_y, actor_shape, level.default_sprite, actor_quad)
+                ActorStatic:load(line)
             elseif actor_type == "player_spawn" then
                 character.body:setPosition(actor_x, actor_y)
+            elseif actor_type == "background" then
+                ActorBackground:load(line)
             end
             line = file:read()
         end
@@ -55,11 +56,11 @@ function split_string(inputstr, sep)
 end
 
 function Level:add_actor(actor, actor_type)
-    if level.actors[actor_type] == nil then
-        level.actors[actor_type] = {}
+    if level.actors[actor.layer][actor_type] == nil then
+        level.actors[actor.layer][actor_type] = {}
     end
-	local actor_id = table.getn(level.actors[actor_type]) + 1
-	level.actors[actor_type][actor_id] = actor
+	local actor_id = table.getn(level.actors[actor.layer][actor_type]) + 1
+	level.actors[actor.layer][actor_type][actor_id] = actor
 end
 
 function beginContact(a, b, coll)

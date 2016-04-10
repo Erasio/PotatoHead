@@ -7,8 +7,6 @@ function Level:init_level(map)
 	level = {}
     level.map = map
     level.world = love.physics.newWorld(0, 9.81*64, true)
-    level.default_sprite = love.graphics.newImage("graphics/block.png")
-    level.default_sprite:setWrap("repeat", "repeat")
 
     level.world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 
@@ -24,22 +22,19 @@ function Level:init_level(map)
             if actor_type == "static" then
                 print("Spawning ActorStatic Location :", actor_x, actor_y)
                 local actor_shape = love.physics.newPolygonShape(x1, y1, x2, y2, x3, y3, x4, y4)
-                local actor_quad = love.graphics.newQuad(x1, y1, x4 - x2, y4 - y2, level.default_sprite:getDimensions())
-                ActorStatic.create(level, actor_x, actor_y, actor_shape, level.default_sprite, actor_quad)
+                ActorStatic.create(level, actor_x, actor_y, actor_shape)
             end
             if actor_type == "player_spawn" then
                 print("Spawning PlayerSpawn Location :", actor_x, actor_y)
                 local actor_shape = love.physics.newPolygonShape(5, 5, 5, -5, -5, -5, -5, 5)
-                local actor_quad = love.graphics.newQuad(x1, y1, 10, 10, level.default_sprite:getDimensions())
-                ActorMeta.create(level, actor_x, actor_y, actor_shape, level.default_sprite, actor_quad, actor_type)
+                ActorMeta.create(level, actor_x, actor_y, actor_shape, actor_type)
             end
             line = file:read()
         end
     else
         level.actors["player_spawn"] = {}
         local actor_shape = love.physics.newPolygonShape(5, 5, 5, -5, -5, -5, -5, 5)
-        local actor_quad = love.graphics.newQuad(0, 0, 10, 10, level.default_sprite:getDimensions())
-        ActorMeta.create(level, 0, 0, actor_shape, level.default_sprite, actor_quad, "player_spawn")
+        ActorMeta.create(level, 0, 0, actor_shape, "player_spawn")
     end
     return level
 end

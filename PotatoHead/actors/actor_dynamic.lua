@@ -10,3 +10,7 @@ function ActorDynamic:create(level, x, y, shape, sprite, quad)
 	setmetatable(new_actor, ActorDynamic_mt)
 	return new_actor
 end
+
+function ActorDynamic:load(line)
+
+end

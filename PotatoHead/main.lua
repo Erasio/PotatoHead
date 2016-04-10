@@ -13,11 +13,13 @@ function love.load()
     --Setup Actors
     require "actors.actor_static"
     require "actors.actor_dynamic"
+    require "actors.actor_background"
     require "actors.player_character"
 
     --Load a Level
-    Level:init_level("demo")
+    sprite_path = "graphics/"
 
+    Level:init_level("jump")
 
     require "spells.super_jump"
     require "spells.double_jump"
@@ -28,7 +30,7 @@ function love.load()
     love.window.setMode(1155, 650)
 
     collision_debugging = false
-    sprites = false
+    sprites = true
 
     --setup camera
     require "camera"
@@ -48,12 +50,12 @@ function love.update(dt)
     end
     if love.keyboard.isDown("a") then
         if round(char_x1 - temp_x1, 0) >= 5 or round(char_x1 - temp_x1, 0) < -1 or temp_x1 == 0 then
-            new_linear_velocity_x = new_linear_velocity_x - (10000 * dt)
+            new_linear_velocity_x = new_linear_velocity_x - (15000 * dt)
         end
     end
     if love.keyboard.isDown("d") then
         if not (round(char_x1 + shape_x1 - temp_x1) <= 5) or round(char_x1 + shape_x1 - temp_x1) < -1 or temp_x1 == 0 then
-            new_linear_velocity_x = new_linear_velocity_x + (10000 * dt)
+            new_linear_velocity_x = new_linear_velocity_x + (15000 * dt)
         end
     end
     debugging = round(char_x1 + shape_x1 - temp_x1)
@@ -62,23 +64,25 @@ function love.update(dt)
 
     camera:setPosition(character.body:getPosition())
 end
- 
 
 function love.draw()
     camera:set()
 
     love.graphics.setColor(255, 255, 255)
-    for i, actor_type in pairs(level.actors) do
-        for i, actor in pairs(actor_type) do
-            if sprites then
-                local shape_x1, shape_y1, shape_x2, shape_y2, shape_x3, shape_y3, shape_x4, shape_y4 = actor.body:getWorldPoints(actor.shape:getPoints())
-                love.graphics.draw(actor.sprite, actor.quad, actor.body:getX(), actor.body:getY())
-            else
-                love.graphics.polygon("fill", actor.body:getWorldPoints(actor.shape:getPoints()))
+    for i, layer in pairs(level.actors) do
+        for j, actor_type in pairs(layer) do
+            for k, actor in pairs(actor_type) do
+                if sprites then                  
+                    --local shape_x1, shape_y1, shape_x2, shape_y2, shape_x3, shape_y3, shape_x4, shape_y4 = actor.body:getWorldPoints(actor.shape:getPoints())
+                    love.graphics.draw(actor.sprite, actor.quad, actor.body:getX(), actor.body:getY())
+                else
+                    if actor.shape then
+                        love.graphics.polygon("fill", actor.body:getWorldPoints(actor.shape:getPoints()))
+                    end
+                end
             end
         end
     end
-
     if collision_debugging then
         love.graphics.setColor(0, 0, 200)
         for i, col in pairs(character.collisions) do

@@ -1,13 +1,11 @@
 Actor = {}
 Actor_mt = { __index = Actor }
 
-function Actor:do_create(x, y, body, shape, sprite, quad)
+function Actor:do_create(level, x, y, body_type, shape)
 	local actor = {}
-    actor.body = body
+    actor.body = love.physics.newBody(level.world, x, y, body_type)
     actor.shape = shape
-    actor.sprite = sprite
     actor.fixture = love.physics.newFixture(actor.body, actor.shape)
-    actor.quad = quad
     actor.fixture:setUserData(actor)
     actor.hitbox = nil
     actor.extend_right = nil
@@ -64,9 +62,9 @@ function Actor:set_hitbox()
 	local actor_x, actor_y = self.body:getPosition()
 	local x1, y1, x2, y2, x3, y3, x4, y4 = self.shape:getPoints()
 	if self == selected_actor then
-		self.hitbox = hitbox:new(actor_x + x4, actor_y + y4, x2 - x4, y2- y4, self.test, "", {0, 255, 0}, false, {self})
+		self.hitbox = hitbox:new(actor_x + x4, actor_y + y4, x2 - x4, y2- y4, self.test, "", {0, 255, 0, 0}, false, {self})
 	else
-		self.hitbox = hitbox:new(actor_x + x4, actor_y + y4, x2 - x4, y2 - y4, self.set_active, "", {0, 255, 0}, false, {self})
+		self.hitbox = hitbox:new(actor_x + x4, actor_y + y4, x2 - x4, y2 - y4, self.set_active, "", {0, 255, 0, 0}, false, {self})
 	end
 
 	if self == selected_actor then

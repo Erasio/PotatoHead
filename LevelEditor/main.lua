@@ -4,12 +4,21 @@ function love.load()
 	require "levelEditor.actor_static"
     require "levelEditor.actor_dynamic"
     require "levelEditor.actor_meta"
+    require "levelEditor.actor_background"
     require "levelEditor.ui_elements"
     require "levelEditor.camera"
 
+    window = {}
+    window.x = 1600
+    window.y = 1080
+
+    love.window.setMode(window.x, window.y)
+
+
 	buttons = {}
-   	hitbox:new(690, 560, 100, 30, save_map, "Save Map", {0, 0, 200}, true)
-   	hitbox:new(580, 560, 100, 30, create_block, "Create Block", {0, 0, 200}, true)
+   	hitbox:new(window.x - 110, window.y - 50, 100, 30, save_map, "Save Map", {0, 0, 200}, true)
+   	hitbox:new(window.x - 230, window.y - 50, 100, 30, create_block, "Create Block", {0, 0, 200}, true)
+   	hitbox:new(window.x - 350, window.y - 50, 100, 30, create_background_sprite, "Add sprite", {0, 0, 200}, true)
    	
    	text_input = ""
    	last_x, last_y = 0
@@ -47,10 +56,19 @@ function love.draw()
 	if level ~= nil then
 		for i, actor_type in pairs(level.actors) do
         	for j, actor in pairs(actor_type) do
-        		if not actor.body:isDestroyed() then
-        			love.graphics.polygon("fill", actor.body:getWorldPoints(actor.shape:getPoints()))
+        		if actor.color ~= nil then
+        			love.graphics.setColor(actor.color)
         		else
-        			table.remove(level.actors[i], j)
+        			love.graphics.setColor({0,0,255})
+        		end
+        		if actor.actor_type == "background" then
+        			love.graphics.polygon("fill", actor.body:getWorldPoints(-5, 5, 5, 5, 5, -5, -5, -5))
+        		else
+        			if not actor.body:isDestroyed() then
+        				love.graphics.polygon("fill", actor.body:getWorldPoints(actor.shape:getPoints()))
+        			else
+        				table.remove(level.actors[i], j)
+        			end
         		end
         	end
         end
@@ -79,10 +97,23 @@ function love.draw()
 	love.graphics.print("Text Input:\"" .. text_input .. "\"", 0, 0)
 
 	if selected_actor ~= nil then
+		if selected_actor.actor_type then
+			love.graphics.print("Type: " .. selected_actor.actor_type, window.x - 190, 10)	
+		else
+			love.graphics.print("Type: None", window.x - 150, 10)	
+		end
 		local actor_x, actor_y = selected_actor.body:getPosition()
-		love.graphics.print("Location: " .. round(actor_x, 0) .. " / " .. round(actor_y,0), 670, 10)
-		local x1, y1, x2, y2, x3, y3, x4, y4 = selected_actor.shape:getPoints()
-		love.graphics.print("Size: " .. round(x2 - x4) .. " / " .. round(y2 - y4), 670, 30)
+		love.graphics.print("Location: " .. round(actor_x, 0) .. " / " .. round(actor_y,0), window.x - 190, 30)
+		current_y = 50
+		if selected_actor.shape then
+			local x1, y1, x2, y2, x3, y3, x4, y4 = selected_actor.shape:getPoints()
+			love.graphics.print("Size: " .. round(x2 - x4) .. " / " .. round(y2 - y4), window.x - 190, current_y)
+			current_y = current_y + 20
+		end
+		if selected_actor.sprite_name then
+			love.graphics.print("Sprite Name: " .. selected_actor.sprite_name, window.x - 190, current_y)
+			current_y = current_y + 20
+		end
 	end
 end
 
@@ -108,15 +139,12 @@ function love.mousepressed(x, y, button)
 	    	     		once = false
 	    	     	end
 	         	end
-	         	print(temp_x, temp_y, v.x, v.y, v.x + v.width, v.y + v.height)
 	         	if temp_x >= v.x and temp_y >= v.y and temp_x < v.x+v.width and temp_y < v.y+v.height then
-	         		print("Hit!")
 	         		table.insert(hitboxes_found, v)
 		           	clicked = true
 	         	end
 	      	end
 	      	if clicked then
-	      		print("Hitboxes found: ", #hitboxes_found)
 	      		hitboxes_found[#hitboxes_found].click()
 	      	end
 	      	if not clicked then
@@ -147,7 +175,12 @@ function love.keypressed( key )
 		text_input = ""
 	elseif key == "return" then
 		if selected_actor ~= nil then
-			selected_actor = nil
+			if text_input ~= "" and selected_actor.sprite_name then
+				selected_actor.sprite_name = text_input
+				text_input = ""
+			else
+				selected_actor = nil
+			end
 		elseif text_input ~= "" and level == nil then
 			open_map()
 		end
@@ -178,13 +211,8 @@ function save_map()
 		file = io.open(level.map .. ".map", "w")
 		for i, actor_type in pairs(level.actors) do
         	for j, actor in pairs(actor_type) do
-        		file:write(i .. ",")
-        		local actor_x, actor_y = actor.body:getPosition()
-        		file:write(actor_x .. "," .. actor_y .. ",")
-        		local x1, y1, x2, y2, x3, y3, x4, y4 = actor.shape:getPoints()
-        		print(i)
-        		file:write(x1 .. "," .. y1 .. "," .. x2 .. "," .. y2 .. "," .. x3 .. "," .. y3 .. "," .. x4 .. "," .. y4 .. ",")
-        		file:write("\n")
+
+        		file:write(actor.save(actor))
         	end
         end
         file:close()
@@ -194,8 +222,17 @@ end
 
 function create_block()
 	local actor_shape = love.physics.newPolygonShape(100, 0, 100, 100, 0, 100, 0, 0)
-    local actor_quad = love.graphics.newQuad(0, 0, 100, 100, level.default_sprite:getDimensions())
     local window_x, window_y = love.window.getMode()
-    ActorStatic.create(level, camera.x +  camera.scaleX * ((window_x / 2) - 50) , camera.y + camera.scaleY * ((window_y / 2) - 50), actor_shape, level.default_sprite, actor_quad)
+    ActorStatic.create(level, camera.x +  camera.scaleX * ((window_x / 2) - 50) , camera.y + camera.scaleY * ((window_y / 2) - 50), actor_shape)
+end
+
+function create_background_sprite()
+	local actor_shape = love.physics.newPolygonShape(100, 0, 100, 100, 0, 100, 0, 0)
+    local window_x, window_y = love.window.getMode()
+    sprite_name = ""
+    if text_input ~= "" then
+    	sprite_name = text_input
+    end
+    ActorBackground.create(level, camera.x +  camera.scaleX * ((window_x / 2) - 50) , camera.y + camera.scaleY * ((window_y / 2) - 50), sprite_name)
 end
 
