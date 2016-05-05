@@ -10,6 +10,8 @@ function Level:init_level(map)
     level.world = love.physics.newWorld(0, 9.81*64, true)
     level.default_sprite = love.graphics.newImage("graphics/block.png")
     level.default_sprite:setWrap("repeat", "repeat")
+    level.time = 0
+    level.trigger = {}
 
 
     level.world:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -35,6 +37,8 @@ function Level:init_level(map)
                 character.body:setPosition(actor_x, actor_y)
             elseif actor_type == "background" then
                 ActorBackground:load(line)
+            elseif actor_type == "trigger" then
+                ActorTrigger:load(line)
             end
             line = file:read()
         end
@@ -61,6 +65,11 @@ function Level:add_actor(actor, actor_type)
     end
 	local actor_id = table.getn(level.actors[actor.layer][actor_type]) + 1
 	level.actors[actor.layer][actor_type][actor_id] = actor
+end
+
+function Level:add_trigger(trigger)
+    local trigger_id = table.getn(level.trigger) + 1
+    level.trigger[trigger_id] = trigger
 end
 
 function beginContact(a, b, coll)

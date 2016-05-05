@@ -5,6 +5,7 @@ function love.load()
     require "levelEditor.actor_dynamic"
     require "levelEditor.actor_meta"
     require "levelEditor.actor_background"
+    require "levelEditor.actor_trigger_circle"
     require "levelEditor.ui_elements"
     require "levelEditor.camera"
 
@@ -19,6 +20,7 @@ function love.load()
    	hitbox:new(window.x - 110, window.y - 50, 100, 30, save_map, "Save Map", {0, 0, 200}, true)
    	hitbox:new(window.x - 230, window.y - 50, 100, 30, create_block, "Create Block", {0, 0, 200}, true)
    	hitbox:new(window.x - 350, window.y - 50, 100, 30, create_background_sprite, "Add sprite", {0, 0, 200}, true)
+   	hitbox:new(window.x - 480, window.y - 50, 100, 30, create_trigger, "Add trigger", {0, 0, 200}, true)
    	
    	text_input = ""
    	last_x, last_y = 0
@@ -236,3 +238,7 @@ function create_background_sprite()
     ActorBackground.create(level, camera.x +  camera.scaleX * ((window_x / 2) - 50) , camera.y + camera.scaleY * ((window_y / 2) - 50), sprite_name)
 end
 
+function create_trigger()
+	local window_x, window_y = love.window.getMode()
+	ActorTrigger.create(level, camera.x +  camera.scaleX * ((window_x / 2) - 50), camera.y + camera.scaleY * ((window_y / 2) - 50), 50, {0, 200, 0})
+end

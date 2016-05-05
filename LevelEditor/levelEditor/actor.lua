@@ -61,6 +61,7 @@ function Actor:set_hitbox()
 
 	local actor_x, actor_y = self.body:getPosition()
 	local x1, y1, x2, y2, x3, y3, x4, y4 = self.shape:getPoints()
+
 	if self == selected_actor then
 		self.hitbox = hitbox:new(actor_x + x4, actor_y + y4, x2 - x4, y2- y4, self.test, "", {0, 255, 0, 0}, false, {self})
 	else

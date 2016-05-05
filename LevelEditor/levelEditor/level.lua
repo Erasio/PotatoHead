@@ -29,6 +29,10 @@ function Level:init_level(map)
                 local actor_shape = love.physics.newPolygonShape(5, 5, 5, -5, -5, -5, -5, 5)
                 ActorMeta.create(level, actor_x, actor_y, actor_shape, actor_type)
             end
+            if actor_type == "trigger" then
+                print("Spawning Trigger")
+                ActorTrigger.create(level, actor_x, actor_y, x1)
+            end
             line = file:read()
         end
     else

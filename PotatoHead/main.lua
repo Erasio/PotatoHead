@@ -15,6 +15,7 @@ function love.load()
     require "actors.actor_dynamic"
     require "actors.actor_background"
     require "actors.player_character"
+    require "actors.actor_trigger"
 
     --Load a Level
     sprite_path = "graphics/"
@@ -41,6 +42,13 @@ end
 function love.update(dt)
     level.world:update(dt) --this puts the world into motion
 
+    if love.keyboard.isDown( "w" ) then
+        if character.is_on_ground then
+            character.body:applyLinearImpulse(0, -100)
+            character.is_on_ground = false
+        end
+    end
+
     new_linear_velocity_x = 0
     local char_x1, char_y1 = character.body:getPosition()
     local shape_x1, shape_y1, shape_x2, shape_y2, shape_x3, shape_y3, shape_x4, shape_y4 = character.shape:getPoints()
@@ -63,6 +71,18 @@ function love.update(dt)
     character.body:setLinearVelocity(new_linear_velocity_x, current_linear_velocity_y)
 
     camera:setPosition(character.body:getPosition())
+
+    --print(level.actors["trigger"])
+
+    if level.trigger ~= nil then
+        for k, trigger in pairs(level.trigger) do
+            if math.abs(trigger.x - char_x1) <= trigger.radius and math.abs(trigger.y - char_y1) <= trigger.radius then
+                trigger:activate()
+            end
+        end
+    end
+
+    level.time = level.time + dt
 end
 
 function love.draw()
@@ -127,11 +147,6 @@ function love.keypressed( key )
     end
     if key == "right" then
         enter_spell_command("r")
-    end
-    if key == "w" then
-        if character.is_on_ground then
-            character.body:applyLinearImpulse(0, -100)
-        end
     end
     if key == "q" then
         if collision_debugging then

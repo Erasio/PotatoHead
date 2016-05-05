@@ -19,5 +19,5 @@ end
 
 function ActorBackground:load(line)
 	local actor_type, actor_x, actor_y, sprite_name, layer = unpack(split_string(line, ","))
-	ActorBackground:create(level, actor_x, actor_y, sprite_name, layer) -- x1 will be the sprite name
+	ActorBackground:create(level, actor_x, actor_y, sprite_name, layer)
 end
