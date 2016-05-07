@@ -23,16 +23,18 @@ function Level:init_level(map)
                 print("Spawning ActorStatic Location :", actor_x, actor_y)
                 local actor_shape = love.physics.newPolygonShape(x1, y1, x2, y2, x3, y3, x4, y4)
                 ActorStatic.create(level, actor_x, actor_y, actor_shape)
-            end
-            if actor_type == "player_spawn" then
+            elseif actor_type == "player_spawn" then
                 print("Spawning PlayerSpawn Location :", actor_x, actor_y)
                 local actor_shape = love.physics.newPolygonShape(5, 5, 5, -5, -5, -5, -5, 5)
                 ActorMeta.create(level, actor_x, actor_y, actor_shape, actor_type)
-            end
-            if actor_type == "trigger" then
+            elseif actor_type == "trigger" then
                 print("Spawning Trigger")
                 ActorTrigger.create(level, actor_x, actor_y, x1)
+            elseif actor_type == "background" then
+                print("Spawning Sprite")
+                ActorBackground.create(level, actor_x, actor_y, x1)
             end
+
             line = file:read()
         end
     else

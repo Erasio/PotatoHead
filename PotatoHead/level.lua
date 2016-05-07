@@ -12,6 +12,7 @@ function Level:init_level(map)
     level.default_sprite:setWrap("repeat", "repeat")
     level.time = 0
     level.trigger = {}
+    level.ps = {} -- ParticleSystems
 
 
     level.world:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -47,6 +48,18 @@ function Level:init_level(map)
     return level
 end
 
+function Level:update(dt)
+    for k, ps in pairs(level.ps) do
+        ps.lifetime = ps.lifetime - dt
+        if ps.lifetime <= 0 then
+            ps.ps:stop()
+            level.ps[k] = nil
+        else
+            ps.ps:update(dt)
+        end
+    end
+end
+
 function split_string(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -65,11 +78,19 @@ function Level:add_actor(actor, actor_type)
     end
 	local actor_id = table.getn(level.actors[actor.layer][actor_type]) + 1
 	level.actors[actor.layer][actor_type][actor_id] = actor
+    actor.id = actor_id
 end
 
 function Level:add_trigger(trigger)
     local trigger_id = table.getn(level.trigger) + 1
     level.trigger[trigger_id] = trigger
+    trigger.id = trigger_id
+end
+
+function Level:add_ps(ps)
+    local ps_id = table.getn(level.ps) + 1
+    level.ps[ps_id] = ps
+    ps.id = ps_id
 end
 
 function beginContact(a, b, coll)

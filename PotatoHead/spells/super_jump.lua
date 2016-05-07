@@ -8,5 +8,8 @@ function SuperJump:cast()
 	print("SuperJump!")
 	if character.is_on_ground then
 		character.body:applyLinearImpulse(0, -200)
+		return true
+	else
+		return false
 	end
 end

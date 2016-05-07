@@ -9,7 +9,6 @@ function love.load()
 
     init_spells()
 
-
     --Setup Actors
     require "actors.actor_static"
     require "actors.actor_dynamic"
@@ -19,6 +18,10 @@ function love.load()
 
     --Load a Level
     sprite_path = "graphics/"
+    spellinput_image = love.graphics.newImage( sprite_path .. "spellinput.png" )
+    spellinput_images = {}
+    change_spell_color = -1
+    spell_color = {255, 255, 255}
 
     Level:init_level("jump")
 
@@ -36,11 +39,15 @@ function love.load()
     --setup camera
     require "camera"
 
+    --add particle system support
+    require "particleSystem"
+
+
     debugging = ""
 end
 
 function love.update(dt)
-    level.world:update(dt) --this puts the world into motion
+    level.world:update(dt)
 
     if love.keyboard.isDown( "w" ) then
         if character.is_on_ground then
@@ -82,7 +89,19 @@ function love.update(dt)
         end
     end
 
+    Level:update(dt)
+
     level.time = level.time + dt
+
+    if change_spell_color > 0 then
+        change_spell_color = change_spell_color - dt
+        if change_spell_color < 0 then
+            change_spell_color = 0
+        end
+    elseif change_spell_color == 0 and #spellinput_images > 0 then
+        change_spell_color = -1
+        spellinput_images = {}
+    end
 end
 
 function love.draw()
@@ -103,6 +122,13 @@ function love.draw()
             end
         end
     end
+
+    for k, ps in pairs(level.ps) do
+        if ps ~= nil then
+            love.graphics.draw(ps.ps)
+        end
+    end
+
     if collision_debugging then
         love.graphics.setColor(0, 0, 200)
         for i, col in pairs(character.collisions) do
@@ -131,7 +157,15 @@ function love.draw()
 
     love.graphics.setColor(0, 200, 100)
     window_x, window_y = love.window.getMode()
-    love.graphics.print(spell_input, window_x / 2 - 40, window_y - 60, 0, 2.5, 2.5)
+    --love.graphics.print(spell_input, window_x / 2 - 40, window_y - 60, 0, 2.5, 2.5)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.draw(spellinput_image, window_x / 2 - 75, 50, 0, 0.5, 0.5)
+    if change_spell_color > 0 then
+        love.graphics.setColor(spell_color)
+    end
+    for k, image in pairs(spellinput_images) do
+        love.graphics.draw(image, window_x / 2 - 75, 50, 0, 0.5, 0.5)
+    end
     love.graphics.print(debugging, 10, 10, 0, 2.5, 2.5)
 end
 
@@ -156,11 +190,8 @@ function love.keypressed( key )
         end
     end
     if key == "e" then
-        if sprites then
-            sprites = false
-        else
-            sprites = true
-        end
+        change_spell_color = 0
+        spell_input = ""
     end
     if key == "g" then
         Level:init_level("nico")

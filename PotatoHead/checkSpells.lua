@@ -23,13 +23,26 @@ end
 
 function enter_spell_command(input)
 	spell_input = spell_input .. input
+	
+	if change_spell_color > 0 then
+		change_spell_color = -1
+        spellinput_images = {}
+    end
+
+	print(sprite_path .. "spell" .. input .. string.len(spell_input) .. ".png")
+	local new_image = love.graphics.newImage( sprite_path .. "spell" .. input .. string.len(spell_input) .. ".png")
+	table.insert(spellinput_images, new_image)
+
 	for i, spell in pairs(current_spells) do
 		if spell:check_spell(spell_input) then
 			spell_input = ""
 			break
 		end
 	end
+
 	if string.len(spell_input) >= max_spell_length then
 		spell_input = ""
+		change_spell_color = 0.5
+		spell_color = {255, 0, 0}
 	end
 end

@@ -9,7 +9,14 @@ function DoubleJump:cast()
 	print("DoubleJump")
 	if self.available then
 		character.body:setLinearVelocity(0, -350)
+		local x, y = character.body:getPosition()
+		x = x + 13
+		y = y + 50
+		DoubleJumpPS:create(x, y)
 		self.available = false
+		return true
+	else
+		return false
 	end
 end
 

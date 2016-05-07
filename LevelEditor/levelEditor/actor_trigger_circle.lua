@@ -15,7 +15,7 @@ function ActorTrigger.save(self)
 	local save_string = "trigger,"
 	local actor_x, actor_y = self.body:getPosition()
 	local radius = 0
-	local x1, y1, x2, y2, x3, y3, x4, y4 = selected_actor.shape:getPoints()
+	local x1, y1, x2, y2, x3, y3, x4, y4 = self.shape:getPoints()
 	love.graphics.print("Size: " .. round(x2 - x4) .. " / " .. round(y2 - y4), window.x - 190, current_y)
 	if math.abs(round(x2 - x4)) <= math.abs(round(y2 - y4)) then
 		radius = math.abs(round(x2 - x4)) / 2
